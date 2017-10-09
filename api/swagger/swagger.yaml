@@ -1,0 +1,2021 @@
+---
+swagger: "2.0"
+info:
+  description: "# Introduction\nThis document describes the programmatic interface\
+    \ of the Traduttore service.\n The API has three differentiated type of clients: \n - *Cartella*: A set of APIs that facilitates integration with the Cartella system and any other healthcare system.\n - *Mobile*: A set of APIs prepared for the ecosystem of mobile applications built on top of the Collegamenti platform.\n - *Admin*: A set of APIs designed for addressing administrative, audit and configuration needs of the platform."
+  version: "1.0.0"
+  title: "Traduttore API"
+  contact:
+    email: "baez@disi.unitn.it"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "virtserver.swaggerhub.com"
+basePath: "/api/v1.0"
+tags:
+- name: "cartella"
+  description: "These set of operations serve the integration needs with the Cartella\
+    \ system"
+- name: "mobile"
+  description: "These set of operations serve the needs of the Traduttore Mobile application\n"
+- name: "admins"
+  description: "These set of operations serve the needs of the Traduttore admin app"
+schemes:
+- "https"
+paths:
+  /sync/shareable:
+    get:
+      tags:
+      - cartella
+      summary: Get the sharing information for an event and resident
+      description: |
+        This function provides information about whether to share a specific event instance, and the sharing settings, including how, and with whom to share.
+      operationId: getShareable
+      x-swagger-router-controller: Cartella
+      produces:
+      - application/json
+      parameters:
+      - name: eventTypeId
+        in: query
+        description: ID of the event type
+        required: true
+        type: string
+        format: uuid
+      - name: residentId
+        in: query
+        description: ID of the resident
+        required: true
+        type: string
+        format: uuid        
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/SynchInfo'
+        400:
+          $ref: '#/responses/BadRequest'  
+        401:
+          $ref: '#/responses/AccessForbidden'
+        404:
+          $ref: '#/responses/NotFound'
+  /sync/events:
+    post:
+      tags:
+      - cartella          
+      summary: Push events from the Cartella to the Collegamenti platform
+      description: |
+        This operation allows NH staff to push events to the Collegamenti platform, so it can be distributed to the family members.
+      consumes:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Event to be pushed
+        required: true
+        schema:
+          $ref: '#/definitions/EventSharing'      
+      responses:
+        201:
+          description: Event was successfully created
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URI to the newly created resource
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        422:
+          $ref: '#/responses/InvalidDataError'   
+    get:
+      tags:
+      - cartella          
+      summary: Search events, including pending commjunications
+      description: |
+        This function allows the NH Staff to search events, and especially pending communications that have been delegated to their role.
+      produces:
+      - application/json
+      parameters:
+      - name: delegatedTo
+        in: query
+        description: ID of user to which the event is delegated 
+        required: true
+        type: string
+        format: uuid
+      - name: optSnooze
+        in: query
+        description: ID of user to which the event is delegated 
+        type: boolean
+      - $ref: '#/parameters/limitCollection'
+      - $ref: '#/parameters/skipCollection'
+  
+      responses:
+        200:
+          description: Successful operation   
+          schema:
+            type : array
+            items:
+              $ref: '#/definitions/EventSharing'   
+        401:
+          $ref: '#/responses/AccessForbidden'                 
+          
+  /sync/event/{eventId}:
+    get:
+      tags:
+      - cartella          
+      summary: Retrieve an event, along with the list of related communications
+      description: |
+        This function retrieves an event, along with the previous updates / communications (or sharing) of that event with the family members.
+      produces:
+      - application/json
+      parameters:
+      - name: eventId
+        in: path
+        description: ID of the event 
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: Successful operation   
+          schema:
+            $ref: '#/definitions/EventSharing'  
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'          
+            
+  /sync/event/{eventId}/updates:            
+    post:
+      tags:
+      - cartella          
+      summary: Pushe event updates from the Cartella to the Collegamenti platform
+      description: |
+        This function allows NH staff to push follow up on events to the Collegamenti platform, so it can be distributed to the family members.
+      consumes:
+      - application/json
+      parameters:
+      - name: eventId
+        in: path
+        description: ID of the event
+        required: true
+        type: string
+        format: uuid      
+      - in: body
+        name: body
+        description: Update to be pushed
+        required: true
+        schema:
+          $ref: '#/definitions/EventSharingUpdate'      
+      responses:
+        201:
+          description: Successful operation 
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URI to the newly created resource          
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'          
+          
+  /sync/event_update/{updateId}:            
+    put:
+      tags:
+      - cartella          
+      summary: Update pending event updates, especially to decide on whether to share or cancel pending communications
+      description: |
+        This function allows NH staff to decide on the pending communications, either to cancell the sharing or to push them to the family members.
+      consumes:
+      - application/json
+      parameters:
+      - name: updateId
+        in: path
+        description: ID of the event update
+        required: true
+        type: string
+        format: uuid      
+      - in: body
+        name: body
+        description: Update to be pushed
+        required: true
+        schema:
+          $ref: '#/definitions/EventSharingUpdate'      
+      responses:
+        200:
+          description: Successful operation  
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'            
+  
+  /calendar:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get a filtered list of events (pneeds or hstatus) and activities
+      description: |
+        Filters the list of activities and events, filtered by type of "entry" (pneeds, hstatus, activities)  and date. The Calendar also retrieves the list of future events, extrapolated from the event and activity type "frequency" information.
+      operationId: getCalendarEvents
+      produces:
+      - application/json
+      parameters:
+      - name: calendarType
+        in: query
+        description: |
+          Type of calendar entry to be retrieved ((pneeds, hstatus, activities)
+        type: array
+        items:
+          type: string
+          enum:
+          - pneeds
+          - hstatus
+          - activities
+        collectionFormat: multi
+      - name: dateFrom
+        in: query
+        description: Start date of calendar entries 
+        type: string
+        format: date-time
+        required: true
+      - name: dateTo
+        in: query
+        description: End date of calendar entries 
+        type: string
+        format: date-time  
+        required: true
+      - $ref: '#/parameters/limitCollection'
+      - $ref: '#/parameters/skipCollection'        
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CalendarEntry'
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+  
+  /pneeds/{eventId}:
+    get:
+      tags:
+      - mobile
+      summary: Get the a Primary Need event 
+      operationId: getPNEvent
+      description: |
+        Retrieves the PN event identified by eventId
+      produces:
+      - application/json
+      parameters:
+      - name: eventId
+        in: path
+        description: ID of PN event to retrieve
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/PrimaryNeed'
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'  
+  
+  /hstatus/{eventId}:
+    get:
+      tags:
+      - mobile
+      summary: Get a Health status event 
+      operationId: getHSEvent
+      description: |
+        Obtains the HS event identified by eventId
+      produces:
+      - application/json
+      parameters:
+      - name: eventId
+        in: path
+        description: ID of HS event to retrieve
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/HealthStatus'
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'  
+  /activity/{activityId}:
+    get:
+      tags:
+      - mobile
+      - admins
+      summary: Get an activity
+      operationId: getActivity
+      description: |
+        Retrieves the activity identified by eventId
+      produces:
+      - application/json
+      parameters:
+      - name: activityId
+        in: path
+        description: ID of the activity to retrieve
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Activity'
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'
+    put:
+      tags:
+      - admins
+      summary: Update an existing activity  
+      operationId: updateActivity
+      consumes:
+      - application/json
+      parameters:
+      - name: activityId
+        in: path
+        description: ID of the activity to retrieve
+        required: true
+        type: string
+        format: uuid      
+      - in: body
+        name: body
+        description: Updates to the activity
+        required: true
+        schema:
+          $ref: '#/definitions/Activity'
+      responses:
+        204:
+          description: Successful operation          
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'          
+  /activity:
+    post:
+      tags:
+      - admins
+      summary: Create a new activity 
+      operationId: createActivity
+      consumes:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Activity to be created
+        required: true
+        schema:
+          $ref: '#/definitions/Activity'
+      responses:
+        201:
+          description: Successful operation   
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URI to the newly created resource             
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+          
+  /activity/{activityId}/editions:
+    get:
+      tags:
+      - mobile
+      - admins
+      summary: Get the list of editions of an activity
+      operationId: getActivityEditions
+      description: |
+        Retrieves the list of editions of an activity
+      produces:
+      - application/json
+      parameters:
+      - name: activityId
+        in: path
+        description: ID of the activity
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type : array
+            items :
+              $ref: '#/definitions/ActivityEdition'
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'   
+    post:
+      tags:
+      - admins
+      summary: Create a new activity edition
+      operationId: createActivityEdition
+      description: |
+        Creates a new activity edition for the given activity      
+      consumes:
+      - application/json
+      parameters:
+      - name: activityId
+        in: path
+        description: ID of the activity
+        required: true
+        type: string
+        format: uuid
+      - in: body
+        name: body
+        description: Activity Edition to be created
+        required: true
+        schema:
+          $ref: '#/definitions/ActivityEdition'                
+      responses:
+        201:
+          description: Successful operation
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URI to the newly created resource             
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound' 
+          
+  /activity/{activityId}/appointments:
+    post:
+      tags:
+      - mobile
+      summary: Create an appointment request
+      operationId: createAppointment
+      description: |
+        Creates a new appointment request for the given activity. Appointment requests are allowed only with "Consultation" activities (canRequestAppointment=true)
+      consumes:
+      - application/json
+      parameters:
+      - name: activityId
+        in: path
+        description: ID of the activity
+        required: true
+        type: string
+        format: uuid
+      - in: body
+        name: body
+        description: Appointment request to be created
+        required: true
+        schema:
+          $ref: '#/definitions/Consultation'               
+      responses:
+        201:
+          description: Successful operation
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URI to the newly created resource             
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound' 
+    get:
+      tags:
+      - admins
+      summary: Get the activity appointments
+      operationId: getActivityAppointments
+      description: |
+        Retrieves the list of appointment request for a given activity         
+      produces:
+      - application/json
+      parameters:
+      - name: activityId
+        in: path
+        description: ID of the Appointment request 
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Consultation'
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'
+          
+  /activity_edition/{editionId}:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get the activity edition
+      operationId: getActivityEdition
+      description: |
+        Retrieves an activity edition          
+      produces:
+      - application/json
+      parameters:
+      - name: editionId
+        in: path
+        description: ID of the activity edition 
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ActivityEdition' 
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'   
+    put:
+      tags:
+      - admins
+      summary: Update the activity edition
+      operationId: updateActivityEdition
+      description: |
+        Updates the activity edition referenced by the uri
+      consumes:
+      - application/json
+      parameters:
+      - name: editionId
+        in: path
+        description: ID of the activity edition to be updated
+        required: true
+        type: string
+        format: uuid
+      - in: body
+        name: body
+        description: Activity Edition update
+        required: true
+        schema:
+          $ref: '#/definitions/ActivityEdition'                
+      responses:
+        204:
+          description: Successful operation
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound' 
+          
+  /activity_edition/{editionId}/participations:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get the list of participants to an activity edition
+      operationId: getActivityEditionParticipations
+      description: |
+        Retrieves the list of participants to the given activity edition
+      produces:
+      - application/json
+      parameters:
+      - name: editionId
+        in: path
+        description: ID of the activity edition 
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ActivityParticipation' 
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'    
+    post:
+      tags:
+      - admins
+      - mobile
+      summary: Create an activity participation
+      operationId: addActivityEditionParticipant
+      description: |
+        Creates an activity participation on the given activity edition
+      consumes:
+      - application/json
+      parameters:
+      - name: editionId
+        in: path
+        description: ID of the activity edition
+        required: true
+        type: string
+        format: uuid
+      - in: body
+        name: body
+        description: Participation to be added
+        required: true
+        schema:
+          $ref: '#/definitions/ActivityParticipation'                 
+      responses:
+        201:
+          description: Successful operation
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URI to the newly created resource                 
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'         
+          
+  /activity_participation/{participationId}:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get an activity participation
+      operationId: getActivityEditionParticipation
+      description: |
+        Retrives the activity participation identified by the URI      
+      produces:
+      - application/json
+      parameters:
+      - name: participationId
+        in: path
+        description: ID of the activity edition 
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/ActivityParticipation' 
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'   
+    put:
+      tags:
+      - admins
+      - mobile
+      summary: Update an activity participation
+      operationId: updateActivityEditionParticipation
+      description: |
+        Updates the activity participation identified by the URI         
+      consumes:
+      - application/json
+      parameters:
+      - name: participationId
+        in: path
+        description: ID of the activity edition to be updated
+        required: true
+        type: string
+        format: uuid
+      - in: body
+        name: body
+        description: Participation to be updated
+        required: true
+        schema:
+          $ref: '#/definitions/ActivityParticipation'
+      responses:
+        204:
+          description: Successful operation
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'  
+          
+  /appointment/{appointmentId}:
+    get:
+      tags:
+      - mobile
+      - admins
+      summary: Get an appointment request
+      operationId: getAppointment
+      description: |
+        Gets the appointment request identified by the URI
+      consumes:
+      - application/json
+      parameters:
+      - name: appointmentId
+        in: path
+        description: ID of the appointment
+        required: true
+        type: string
+        format: uuid
+      responses:
+        200:
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Consultation'            
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'  
+    put:
+      tags:
+      - mobile
+      - admins
+      summary: Update an appointment request
+      operationId: updateAppointment
+      description: |
+        Updates the appointment request identified by the URI
+      consumes:
+      - application/json
+      parameters:
+      - name: appointmentId
+        in: path
+        description: ID of the appointment
+        required: true
+        type: string
+        format: uuid
+      - in: body
+        name: body
+        description: Appointment request to be updated
+        required: true
+        schema:
+          $ref: '#/definitions/Consultation'                
+      responses:
+        204:
+          description: Successful operation
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'  
+          
+  /feedbacks:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get the list of feedbacks by context
+      operationId: getFeedbacks
+      description: |
+        Gets and filter the feedbacks by context (feedback on staff, pneeds, hstatus, activity)        
+      produces:
+      - application/json
+      parameters:
+      - name: feedbackOn
+        in: query
+        description: Filter by context of feedback
+        type: array
+        collectionFormat: multi
+        items: 
+          type: string
+          enum: 
+            - staff
+            - pneeds
+            - hstatus
+            - activity
+      - $ref: '#/parameters/limitCollection'
+      - $ref: '#/parameters/skipCollection'          
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Feedback' 
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'                 
+  
+    post:
+      tags:
+      - mobile
+      summary: Create a feedback entry
+      operationId: createFeedback
+      description: |
+        Creates a contextual feedback         
+      consumes:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Feedback to be added
+        required: true
+        schema:
+          $ref: '#/definitions/Feedback'                 
+      responses:
+        201:
+          description: Successful operation
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URI to the newly created resource              
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'   
+          
+  /feedback/{feedbackId}:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get a feedback
+      operationId: getFeedback
+      description: |
+        Retrieves the feedback referenced by the URI
+      produces:
+      - application/json
+      parameters:
+      - name: feedbackId
+        in: path
+        description: ID of the feedback
+        required: true
+        type: string
+        format: uuid   
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Feedback' 
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'      
+    put:
+      tags:
+      - admins
+      - mobile
+      summary: Updates a feedback
+      operationId: updateFeedback
+      description: |
+        Updates the feedback referenced by the URI      
+      consumes:
+      - application/json      
+      parameters:
+      - name: feedbackId
+        in: path
+        description: ID of the feedback
+        required: true
+        type: string
+        format: uuid  
+      - in: body
+        name: body
+        description: Feedback to be updated
+        required: true
+        schema:
+          $ref: '#/definitions/Feedback'        
+      responses:
+        204:
+          description: Successful operation
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'      
+          
+  /feedback/{feedbackId}/comments:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get comments related to a feedback
+      operationId: getFeedbackComments
+      description: |
+        Retrieves the list of comments on a given feedback         
+      produces:
+      - application/json
+      parameters:
+      - name: feedbackId
+        in: path
+        description: ID of the feedback
+        required: true
+        type: string
+        format: uuid   
+      responses:
+        200:
+          description: successful operation
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Feedback' 
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'  
+    post:
+      tags:
+      - mobile
+      - admins
+      summary: Create a comment on a feedback
+      description: |
+        Creates a new comment in the context of the given feedback 
+      operationId: createFeedbackComment
+      consumes:
+      - application/json
+      parameters:
+      - name: feedbackId
+        in: path
+        description: ID of the feedback
+        required: true
+        type: string
+        format: uuid        
+      - in: body
+        name: body
+        description: Comment to be added
+        required: true
+        schema:
+          $ref: '#/definitions/UserComment'                 
+      responses:
+        201:
+          description: Successful operation
+          headers:
+            Location:
+              type: string
+              format: uri
+              description: URI to the newly created resource                    
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'  
+          
+  /comment/{commentId}:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get a comment
+      operationId: getComment
+      description: |
+        Retrieves the comment referenced by the URI       
+      produces:
+      - application/json
+      parameters:
+      - name: commentId
+        in: path
+        description: ID of the comment
+        required: true
+        type: string
+        format: uuid   
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UserComment' 
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'   
+    put:
+      tags:
+      - mobile
+      - admins
+      summary: Create a feedback entry
+      operationId: updateComment
+      description: |
+        Updates the comment referenced by the URI       
+      consumes:
+      - application/json
+      parameters:
+      - name: commentId
+        in: path
+        description: ID of the comment
+        required: true
+        type: string
+        format: uuid          
+      - in: body
+        name: body
+        description: Comment to be added
+        required: true
+        schema:
+          $ref: '#/definitions/UserComment'                 
+      responses:
+        204:
+          description: successful operation
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'      
+  /rsa:
+    get:
+      tags:
+      - admins
+      - mobile
+      summary: Get information about the RSA
+      operationId: getRSAInfo
+      description: |
+        Gets general information about the RSA
+      produces:
+      - application/json
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: '#/definitions/RSAInfo'
+        401:
+          $ref: '#/responses/AccessForbidden' 
+definitions:
+  PrimaryNeed:
+    type: object  
+    properties:
+      id:
+        readOnly: true
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+      createdOn:
+        description: Datetime when the event was created
+        allOf: 
+          - $ref: '#/definitions/ServerTimestamp'
+      type:
+        readOnly: true
+        description: Type of primary need event
+        allOf: 
+          - $ref: '#/definitions/EventType'
+      staffComment:
+        readOnly: true
+        description: Comments of the RSA Staff on the event
+        allOf: 
+          - $ref: '#/definitions/UserComment'
+      indicator :
+        readOnly: true
+        description: Main "numeric" indicator summarising the event
+        allOf: 
+          - $ref: '#/definitions/EventExtraParams'
+      details:
+        type: array
+        readOnly: true  
+        description: Extra event-specific details
+        items:
+           $ref: '#/definitions/EventExtraParams'
+  HealthStatus:
+    type: "object"
+    properties:
+      id:
+        readOnly: true
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+      createdOn:
+        description: Datetime when the event was created
+        allOf: 
+          - $ref: '#/definitions/ServerTimestamp'
+      type:
+        readOnly: true
+        description: Type of health status event
+        allOf: 
+          - $ref: '#/definitions/EventType'
+      currentIndicators :
+        type : array
+        readOnly: true
+        description: Main "numeric" indicators summarising the event at this time
+        items :
+          $ref: '#/definitions/EventExtraParams'
+      currentSeverity : 
+        readOnly: true  
+        description: Textual indication of the current severity of the event
+        type : string
+        example: mild consequences
+      updates:
+        type: array
+        description: Historical information about the various updates on the health status event
+        items:
+           $ref: '#/definitions/EventUpdate'     
+  EventUpdate:
+    type: "object"
+    properties:
+      id:
+        readOnly: true
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+      createdOn:
+        description: Datetime when the event update was created
+        allOf: 
+          - $ref: '#/definitions/ServerTimestamp'
+      staffComment:
+        readOnly: true
+        description: Comments of the RSA Staff on the event
+        allOf: 
+          - $ref: '#/definitions/UserComment'
+      indicators :
+        readOnly: true
+        type : array
+        description: Main "numeric" indicators summarising the event at the time of the update
+        items :
+          $ref: '#/definitions/EventExtraParams'
+      severity :
+        readOnly: true
+        type : string
+        description: Textual indication of the severity of the event at the time of the update
+        example: mild consequences
+      details:
+        readOnly: true
+        type: array
+        description: Extra event-specific details
+        items:
+           $ref: '#/definitions/EventExtraParams'   
+  EventType:
+    type:
+      object   
+    required:
+    - "name"
+    properties:
+      id:
+        readOnly: true
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+      name:
+        type: string
+        description: Name of the event type        
+        example: Lunch
+      description:
+        type: string
+        description: Description of the event type        
+        example:  Daily lunch
+      explanation:
+        type: string
+        description: Default explanation of the event type         
+        example:  Meals are personalised to the nutritional needs of each resident. Residents are expected to eat 75% of their meals.
+      category:
+        type: string
+        description: Category of the event type, used for grouping events        
+        example: Meals
+      startDate:
+        description: Date the event type started to be in effect      
+        allOf: 
+          - $ref: '#/definitions/UserTimestamp'
+      repeatsEvery:
+        type: string   
+        description: Frequency at which the event takes place        
+        example:  daily
+        enum:
+        - daily
+        - weekly
+        - monthly        
+        - yearly
+      repeatsOn:
+        type: array     
+        description: Days the event is repeated in a week        
+        example:  [Monday, Tuesday] 
+        items:
+          type: string
+          enum:
+          - Monday
+          - Tuesday
+          - Wednesday
+          - Thursday
+          - Friday
+          - Saturday
+          - Sunday
+  EventExtraParams:
+    type:
+      object   
+    required:
+    - "name"
+    properties:
+      id:
+        readOnly: true
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+      createdBy:
+        $ref: '#/definitions/User'
+      name:
+        type: string
+        description: Name of the event parameter (as displayed)
+        example:  Meal Completeness        
+      description:
+        type: string
+        description: Description of the event parameter
+        example:  Portion of the meal eaten
+      valueText:
+        type: string
+        description: Value of the parameter if in textual form
+      valueNum:
+        type: integer
+        format: int64
+        description: Value of the parameter if in numeric form
+  Activity:
+    type:
+      object  
+    required:
+    - "category"
+    - "description"
+    - "duration"
+    - "name"
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true
+      createdOn:
+        description: Datetime when the activity was created
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp'   
+      duration:
+        type: string  
+        description: Duration of the event in hours
+      name:
+        type: string
+        description: Name of the activity (as displayed)
+        example: Recita del rosario
+      description:
+        type: string
+        description: Description of the activity (as displayed)
+        example:  Recita del santo rosario organizato dalle nonne
+      benefits:
+        type: string
+        description: Explanation of the benefits of the activity (to inform family members)
+        example:  Spiritual support is important
+      category:
+        type: string
+        description: Category of the activity, to group and filter activities
+        example: Religious   
+      repeatsEvery:
+        type: string   
+        description: Frequency at which the activity takes place            
+        example:  weekly
+        enum:
+        - daily
+        - weekly
+        - monthly        
+        - yearly
+      repeatsOn:
+        type: array        
+        description: Days the event is repeated in a week             
+        example:  [Monday, Tuesday] 
+        items:
+          type: string
+          enum:
+          - Monday
+          - Tuesday
+          - Wednesday
+          - Thursday
+          - Friday
+          - Saturday
+          - Sunday
+      location:
+        description: Location where the activity takes place (Default value)      
+        type: string
+        example: Room 10, Building C  
+      canVolunteer: 
+        description: Indicates whether the FM can volunteer (Default value)
+        type: boolean
+      canParticipate: 
+        description: Indicates whether the FM can participate of the activity (Default value)
+        type: boolean
+      canRequestAppointments: 
+        description: Indicates whether the activity is a consultation        
+        type: boolean    
+      organisedBy:
+        $ref: '#/definitions/User'
+      appointmentRequests : 
+        type: array
+        description: Appointment requests on the consultation. Allowed only if (canRequestAppointments=true) 
+        readOnly: true
+        items:
+          $ref: '#/definitions/Consultation'  
+      editions:
+        type: array
+        description: Instances of the activity on a specific date and time 
+        readOnly: true
+        items:
+          $ref: '#/definitions/ActivityEdition' 
+  ActivityEdition:
+    type:
+      object  
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true
+      startDate:
+        description: Actual start date of the activity
+        allOf:
+          - $ref: '#/definitions/UserTimestamp'   
+      endDate:
+        description: Actual end date of the activity
+        allOf:
+          - $ref: '#/definitions/UserTimestamp'        
+      status:
+        type: string 
+        description: Current status of the activity
+        enum:
+        - confirmed
+        - finished        
+        - cancelled
+        - postponed  
+      location:
+        type: string   
+        example: Room 22, Building B 
+      canVolunteer: 
+        description: Indicates whether the FM can volunteer (value for the especific edition)       
+        type: boolean
+      canParticipate: 
+        description: Indicates whether the FM can participate of the activity (value for the especific edition) 
+        type: boolean
+      canRequestAppointments: 
+        description: Indicates whether the activity is a consultation (value for the especific edition)    
+        type: boolean            
+      participants:
+        type: array
+        description: List of participants to the activity edition (not available for consultations)
+        readOnly: true
+        items:
+          $ref: '#/definitions/ActivityParticipation'  
+      appointments: 
+        type: array
+        description: List of appointments to the specific consultation date (available only if canRequestAppointments=true)
+        readOnly: true
+        items:
+          $ref: '#/definitions/Consultation'  
+      comments:
+        type: array
+        description: Announcements and comments on the event edition
+        readOnly: true
+        items:
+          $ref: '#/definitions/UserComment' 
+      multimedia:
+        type: array
+        description: Multimedia attachments to be displayed in the activity edition page
+        readOnly: true
+        items:
+          $ref: '#/definitions/MultimediaAttachment'  
+  ActivityParticipation:
+    type:
+      object  
+    required:
+    - "role"
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true   
+      participant:
+        $ref: '#/definitions/User'
+      createdOn:
+        description: Datetime the activity participation was created
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp'   
+      participatedOn:
+        description: Datetime the user (participant) participated
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp'   
+      status:
+        type: string 
+        description: Current status of the participation
+        enum:
+        - confirmed
+        - cancelled
+        - planned   
+      role:
+        type: string  
+        description: Role of the user in the activity edition
+        enum:
+        - attendee
+        - volunteer
+        - organiser          
+      feedback:
+        readOnly: true
+        type: string
+        example:  ParticipationFeeedback
+  Consultation:
+    type:
+      object  
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true 
+      requestedOn:
+        description: Datetime the consultation requested was created
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp'         
+      requestedFor:
+        description: Date requested for the consultation
+        allOf:
+          - $ref: '#/definitions/UserTimestamp'  
+      scheduledFor:
+        description: Date assigned for the consultation
+        allOf:
+          - $ref: '#/definitions/UserTimestamp'      
+      staffComment:
+        readOnly: true
+        description: Notes of the RSA Staff on the consultation request
+        allOf: 
+          - $ref: '#/definitions/UserComment'
+      requestedBy:
+        $ref: '#/definitions/User'  
+  MultimediaAttachment:
+    type:
+      object  
+    required:
+    - "mimeType"
+    - "url"
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true   
+      uploadedBy:
+        $ref: '#/definitions/User'
+      uploadedOn:
+        description: Datetime the attachment was uploaded
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp'       
+      mimeType:
+        type: string
+        description: Type of attached material in mime type 
+        example:  image/jpeg    
+      url : 
+        type: string
+        description: URL of the attachment
+        format: url
+  CalendarEntry:
+    type:
+      object    
+    properties:
+      pneeds:
+        type: "array"
+        description: List of primary needs entries
+        items:
+          $ref: "#/definitions/CalendarEntryPneeds"
+      hstatus:
+        type: "array"
+        description: List of health status entries
+        items:
+          $ref: "#/definitions/CalendarEntryHstatus"
+      activities:
+        type: "array"
+        description: List of activity entries
+        items:
+          $ref: "#/definitions/CalendarEntryActivity"
+  CalendarEntryPneeds:
+    type:
+      object    
+    properties:
+      name:
+        type: "string"
+        description: Name of the entry (to be displayed in the calendar)
+        example: "Lunch"
+      category:
+        type: "string"
+        description: Name of the category (to be displayed in the calendar)
+        example: "Meals"
+      startDate:
+        type: "string"
+        description: Planned start date
+        format: "date-time"
+      endDate:
+        type: "string"
+        description: Planned end date
+        format: "date-time"
+      type:
+        $ref: "#/definitions/EventType"
+      event:
+        $ref: "#/definitions/PrimaryNeed"
+  CalendarEntryHstatus:
+    type:
+      object    
+    properties:
+      name:
+        type: "string"
+        description: Name of the entry (to be displayed in the calendar)
+        example: "Blood pressure Measurement"
+      category:
+        type: "string"
+        description: Name of the category (to be displayed in the calendar)
+        example: "Bio-messures"
+      startDate:
+        type: "string"
+        description: Planned start date
+        format: "date-time"
+      endDate:
+        type: "string"
+        description: Planned end date
+        format: "date-time"
+      type:
+        $ref: "#/definitions/EventType"
+      event:
+        $ref: "#/definitions/HealthStatus"
+  CalendarEntryActivity:
+    type:
+      object    
+    properties:
+      name:
+        type: "string"
+        description: Name of the entry (to be displayed in the calendar)
+        example: "Recita del Rosario"
+      category:
+        type: "string"
+        description: Name of the category (to be displayed in the calendar)
+        example: "Religious"
+      startDate:
+        type: "string"
+        description: Planned start date
+        format: "date-time"
+      endDate:
+        type: "string"
+        description: Planned end date
+        format: "date-time"
+      activity:
+        $ref: "#/definitions/Activity"
+  UserComment:
+    type:
+      object  
+    required:
+    - "comment"
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true  
+      createdBy:
+        $ref: '#/definitions/User'
+      createdOn:
+        description: Datetime the comment was created
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp'       
+      comment:
+        type: string
+        description: The content of the comment
+        example:  The resident is doing great  
+  Feedback:
+    type:
+      object  
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true
+      subject:
+        type: string
+        description: Subject of the feedback thread
+        example:  Recita del Santo Rosario         
+      feedbackBy:
+        $ref: '#/definitions/User'
+      feedbackOnStaff:
+        $ref: '#/definitions/User'
+      feedbackOnPN:
+        $ref: '#/definitions/PrimaryNeed'        
+      feedbackOnHS:
+        $ref: '#/definitions/HealthStatus'                
+      feedbackOnActivity:
+        $ref: '#/definitions/Activity'                
+      createdOn:
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp'     
+      rating :
+        type: integer
+        description: Rating of the user associated with the feedback
+      comments:
+        readOnly: true      
+        type: array
+        description: Comment thread associated with the feedback
+        items:
+          $ref: '#/definitions/UserComment'
+  RSAInfo:
+    type:
+      object    
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true
+      name:
+        type: string
+        description: Name of the RSA
+        example:  Trentino RSA            
+      description:
+        type: string
+        description: Description of the RSA
+        example: Funded in 1920, the Trentino RSA excells in ...
+      staff : 
+        type: array
+        description: List of Staff members
+        items:
+          $ref: '#/definitions/User'
+      contactInfos : 
+        type: array
+        description: Contact information of the RSA
+        items:
+          $ref: '#/definitions/ContactInfo'
+  ContactInfo:
+    type:
+      object    
+    properties:
+      type:
+        type: "string"
+        description: Type of contact information
+        example: "email"
+      value:
+        type: "string"
+        description: Contact information
+        example: "rsadmin@gmail.com"
+  User:
+    type:
+      object  
+    properties:
+      id:
+        allOf:
+          - $ref: '#/definitions/ResourceId'
+      name:
+        type: string  
+        description: Name of the user
+      role:
+        type: string  
+        description: Role of the user
+        example: resident
+      contactInfos : 
+        type: array
+        description: Contact information of the user
+        readOnly : true
+        items:
+          $ref: '#/definitions/ContactInfo'   
+  SynchInfo:
+    type:
+      object    
+    properties:
+      isShareable:
+        type: "boolean"
+        description: "Indicates whether the event is shareable"
+      eventConfig:
+        $ref: "#/definitions/EventSharingConfig"
+      sendTo:
+        type: "array"
+        description: "Information about the people the event should be shared with"
+        items:
+          $ref: "#/definitions/PersonSharingConfig"
+    description: "Resource representing the sharing information for a specific event"
+  EventSharingConfig:
+    type:
+      object      
+    properties:
+      id:
+        allOf: 
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true     
+      name:
+        type: "string"
+        description: "Name of the Event sharing configuration"
+      description:
+        type: "string"
+        description: "Description of the Event sharing configuration"
+      currentSetting:
+        $ref: "#/definitions/EventSharingConfigSettings"
+    description: "Resource representing the event sharing configuration of the RSA"
+  PersonSharingConfig:
+    type:
+      object      
+    properties:
+      id:
+        allOf: 
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true         
+      contact:
+        $ref: "#/definitions/User"
+      relationship:
+        type: "string"
+        example: "dougther"
+        description: "Relationship of the family member with the resident"
+      preference:
+        $ref: "#/definitions/PersonSharingPreference"
+      persona:
+        $ref: "#/definitions/EventSharingPersona"
+    description: "Resource representing sharing information of the family member"
+  EventSharingPersona:
+    type:
+      object        
+    properties:
+      id:
+        allOf: 
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true         
+      name:
+        type: "string"
+        description: "Name of the Sharing Persona"
+      suggestion:
+        type: "string"
+        description: "Written suggestions on how to deal with this \"Persona\""
+      expectedReactions:
+        type: "array"
+        example:
+        - "worry"
+        description: "List of potential reactions of this \"Persona\""
+        items:
+          type: "string"
+      members:
+        type: "array"
+        description: "List of family members belonging to this \"Persona\""
+        items:
+          $ref: "#/definitions/User"
+  EventSharingConfigSettings:
+    type:
+      object    
+    properties:
+      id:
+        allOf: 
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true   
+      name:
+        type: string  
+        description: Name of this version of the settings
+      description:
+        type: string
+        description: Description of this version of the settings
+      startDate:
+        allOf:
+          - $ref: '#/definitions/UserTimestamp'   
+      endDate:
+        allOf:
+          - $ref: '#/definitions/UserTimestamp'  
+      isActive:
+        type: boolean
+        description: Indicates whether the current setting is active
+      isShareable:
+        type: boolean   
+        description: Indicates whether the event is shareable
+      reqConfirmation:
+        type: boolean
+        description: Indicates whether the event sharing requires confirmation. If not, the event is shared automatically.
+      reqStaffComment:
+        type: boolean
+        description: Indicates whether the event sharing requires the staff personalised comment
+      shareOnInsert:
+        type: boolean
+        description: Indicates whether the event should be shared at the moment it is entered in the system.
+      optSnooze:
+        type: boolean  
+        description: Indicates whether the event sharing can be delayed (snoozed) by the Staff
+      optCancel:
+        type: boolean  
+        description: Indicates whether the event sharing can be cancelled by the Staff
+      shareInApp:
+        type: boolean    
+        description: Indicates whether the event should be shared via the Traduttore app
+      shareInCall:
+        type: boolean   
+        description: Indicates whether the event should be shared via phone call
+      shareInSM:
+        type: boolean
+        description: Indicates whether the event should be shared via a messaging app (e.g., WhatsApp)
+      extraParams:
+        type: array
+        description: Defines the event-specific parameters required
+        items:
+          $ref: '#/definitions/EventSharingExtraParam'
+    description: "Detailed settings of a sharing configuration"
+  EventSharingExtraParam:
+    type:
+      object      
+    required:
+    - "name"
+    - "title"
+    - "type"
+    properties:
+      id:
+        allOf: 
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true   
+      name:
+        type: string
+        description: Name of the parameter
+      title:
+        type: string
+        description: Title that will be shown when requesting the parameter       
+      type:
+        type: string   
+        description: Type of parameter
+        example: InputText
+    description: "Resource representing the extra input params for a event sharing"
+  PersonSharingPreference:
+    type:
+      object     
+    properties:
+      shareWithMe:
+        type: "boolean"
+        description: "Indicates whether the person wants to be informed of this event"
+      shareInApp:
+        type: "boolean"
+        description: "Person preference towards being informed via the Traduttore\
+          \ app"
+      shareInCall:
+        type: "boolean"
+        description: "Person preference towards being informed via phone call"
+      shareInSM:
+        type: "boolean"
+        description: "Person preference towards being informed via messaging apps"
+    description: "Resource representing the sharing preferences of the family member"
+  EventSharing:
+    type:
+      object  
+    properties:
+      id:
+        allOf: 
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true         
+      eventIdCartella:
+        description: Event identifier in the Cartella system
+        allOf: 
+          - $ref: '#/definitions/CartellaId'
+      resident:
+        description: Resident that is affected by the event
+        allOf: 
+          - $ref: '#/definitions/User'  
+      createdOn:
+        description: Event creation datetime
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp' 
+      currentPhase :
+        description: Current phase in the event process (if any)
+        type: string
+      updates:
+        type: array
+        description: Event updates, containing the actual event data
+        readOnly: true
+        items:
+          $ref: '#/definitions/EventSharingUpdate'  
+  EventSharingUpdate:
+    type:
+      object
+    properties:
+      id:
+        allOf: 
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true
+      status:
+        type: string
+        description: Indicates the status of the event update "sharing"
+        enum:
+        - shared
+        - snoozed
+        - cancelled
+      phase : 
+        type: string        
+        description: Indicates the phase this event update is related to
+      createdOn:
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp' 
+      createdBy:
+        description: Staff member who created the event update
+        allOf:      
+          - $ref: '#/definitions/User'      
+      statusChangedOn:
+        allOf:
+          - $ref: '#/definitions/ServerTimestamp'  
+      statusChangedBy:
+        description: Staff member who last updated the status of the event update
+        allOf:
+          - $ref: '#/definitions/User'           
+      staffComment:
+        description: Staff comments and notes on the event update (mandatory if reqStaffComment) 
+        type: string        
+      staffInternalNote:
+        description: Staff comments for audit purposes 
+        type: string                
+      sharedFrom:
+        description: Encodes from where in the Cartella the event was shared
+        type: string
+      sharedInApp:
+        description: Indicates whether the event udpate was shared via Traduttore
+        type: boolean          
+      sharedInCall:
+        description: Indicates whether the event was communicated via phone call
+        type: boolean                  
+      sharedInSM:
+        description: Indicates whether the event was communicated via messaging
+        type: boolean
+      updateData:
+        type: array
+        description: Data to be shared
+        items:
+          $ref: '#/definitions/EventSharingUpdateDetail'   
+  EventSharingUpdateDetail:
+    type:
+      object  
+    properties:
+      id:
+        allOf: 
+          - $ref: '#/definitions/ResourceId'
+          - readOnly: true
+      name:
+        type: string
+        description: Name of the parameter (to match the EventSharingExtraParam)
+      value:
+        type: string    
+        description: Value of the parameter
+    description: "Resource representing the event update data to be shared"
+  ResourceId:
+    type: "string"
+    format: "uuid"
+    example: "\"d290f1ee-6c54-4b01-90e6-d701748f0851\""
+  ServerTimestamp:
+    type: "string"
+    format: "date-time"
+  UserTimestamp:
+    type: "string"
+    format: "date-time"
+  CartellaId:
+    type: "integer"
+    example: "11"
+  Error:
+    properties:
+      status:
+        type: "integer"
+        minimum: 100.0
+        maximum: 600.0
+      error:
+        type: "string"
+parameters:
+  limitCollection:
+    name: "limit"
+    in: "query"
+    description: "Max number of records to return"
+    required: false
+    type: "integer"
+    format: "int32"
+  skipCollection:
+    name: "skip"
+    in: "query"
+    description: "Number of records to skip"
+    required: false
+    type: "integer"
+    format: "int32"
+responses:
+  AccessForbidden:
+    description: "Access forbidden, invalid authorisation header"
+    schema:
+      $ref: "#/definitions/Error"
+  BadRequest:
+    description: "Request was sent in incorrect format"
+    schema:
+      $ref: "#/definitions/Error"
+  InvalidDataError:
+    description: "Invalid data was sent"
+    schema:
+      $ref: "#/definitions/Error"
+  NotFound:
+    description: "Resource was not found"
+    schema:
+      $ref: "#/definitions/Error"
