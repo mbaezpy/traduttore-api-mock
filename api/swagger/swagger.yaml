@@ -10,7 +10,7 @@ info:
   license:
     name: "Apache 2.0"
     url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "virtserver.swaggerhub.com"
+host: "traduttore-api.herokuapp.com"
 basePath: "/api/v1.0"
 tags:
 - name: "cartella"
@@ -65,6 +65,8 @@ paths:
       summary: Push events from the Cartella to the Collegamenti platform
       description: |
         This operation allows NH staff to push events to the Collegamenti platform, so it can be distributed to the family members.
+      operationId: postEvent
+      x-swagger-router-controller: Cartella        
       consumes:
       - application/json
       parameters:
@@ -94,6 +96,8 @@ paths:
       summary: Search events, including pending commjunications
       description: |
         This function allows the NH Staff to search events, and especially pending communications that have been delegated to their role.
+      operationId: getEvents
+      x-swagger-router-controller: Cartella          
       produces:
       - application/json
       parameters:
@@ -127,6 +131,8 @@ paths:
       summary: Retrieve an event, along with the list of related communications
       description: |
         This function retrieves an event, along with the previous updates / communications (or sharing) of that event with the family members.
+      operationId: getEventById
+      x-swagger-router-controller: Cartella         
       produces:
       - application/json
       parameters:
@@ -155,6 +161,8 @@ paths:
       summary: Pushe event updates from the Cartella to the Collegamenti platform
       description: |
         This function allows NH staff to push follow up on events to the Collegamenti platform, so it can be distributed to the family members.
+      operationId: postEventUpdate
+      x-swagger-router-controller: Cartella           
       consumes:
       - application/json
       parameters:
@@ -192,6 +200,8 @@ paths:
       summary: Update pending event updates, especially to decide on whether to share or cancel pending communications
       description: |
         This function allows NH staff to decide on the pending communications, either to cancell the sharing or to push them to the family members.
+      operationId: putEventUpdateById
+      x-swagger-router-controller: Cartella           
       consumes:
       - application/json
       parameters:
@@ -226,6 +236,7 @@ paths:
       description: |
         Filters the list of activities and events, filtered by type of "entry" (pneeds, hstatus, activities)  and date. The Calendar also retrieves the list of future events, extrapolated from the event and activity type "frequency" information.
       operationId: getCalendarEvents
+      x-swagger-router-controller: Mobile  
       produces:
       - application/json
       parameters:
@@ -273,6 +284,7 @@ paths:
       - mobile
       summary: Get the a Primary Need event 
       operationId: getPNEvent
+      x-swagger-router-controller: Mobile
       description: |
         Retrieves the PN event identified by eventId
       produces:
@@ -302,6 +314,7 @@ paths:
       - mobile
       summary: Get a Health status event 
       operationId: getHSEvent
+      x-swagger-router-controller: Mobile
       description: |
         Obtains the HS event identified by eventId
       produces:
@@ -1980,6 +1993,8 @@ definitions:
     type: "integer"
     example: "11"
   Error:
+    type:
+      object    
     properties:
       status:
         type: "integer"
