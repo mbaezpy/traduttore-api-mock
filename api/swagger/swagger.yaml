@@ -343,7 +343,8 @@ paths:
       - mobile
       - admins
       summary: Get an activity
-      operationId: getActivity
+      operationId: getActivityById
+      x-swagger-router-controller: Mobile
       description: |
         Retrieves the activity identified by eventId
       produces:
@@ -371,6 +372,7 @@ paths:
       - admins
       summary: Update an existing activity  
       operationId: updateActivity
+      x-swagger-router-controller: Mobile
       consumes:
       - application/json
       parameters:
@@ -401,6 +403,7 @@ paths:
       - admins
       summary: Create a new activity 
       operationId: createActivity
+      x-swagger-router-controller: Mobile
       consumes:
       - application/json
       parameters:
@@ -430,6 +433,7 @@ paths:
       - admins
       summary: Get the list of editions of an activity
       operationId: getActivityEditions
+      x-swagger-router-controller: Mobile
       description: |
         Retrieves the list of editions of an activity
       produces:
@@ -459,6 +463,7 @@ paths:
       - admins
       summary: Create a new activity edition
       operationId: createActivityEdition
+      x-swagger-router-controller: Mobile
       description: |
         Creates a new activity edition for the given activity      
       consumes:
@@ -497,6 +502,7 @@ paths:
       - mobile
       summary: Create an appointment request
       operationId: createAppointment
+      x-swagger-router-controller: Mobile
       description: |
         Creates a new appointment request for the given activity. Appointment requests are allowed only with "Consultation" activities (canRequestAppointment=true)
       consumes:
@@ -533,6 +539,7 @@ paths:
       - admins
       summary: Get the activity appointments
       operationId: getActivityAppointments
+      x-swagger-router-controller: Mobile
       description: |
         Retrieves the list of appointment request for a given activity         
       produces:
@@ -564,7 +571,8 @@ paths:
       - admins
       - mobile
       summary: Get the activity edition
-      operationId: getActivityEdition
+      operationId: getActivityEditionById
+      x-swagger-router-controller: Mobile
       description: |
         Retrieves an activity edition          
       produces:
@@ -592,6 +600,7 @@ paths:
       - admins
       summary: Update the activity edition
       operationId: updateActivityEdition
+      x-swagger-router-controller: Mobile
       description: |
         Updates the activity edition referenced by the uri
       consumes:
@@ -626,6 +635,7 @@ paths:
       - mobile
       summary: Get the list of participants to an activity edition
       operationId: getActivityEditionParticipations
+      x-swagger-router-controller: Mobile
       description: |
         Retrieves the list of participants to the given activity edition
       produces:
@@ -656,6 +666,7 @@ paths:
       - mobile
       summary: Create an activity participation
       operationId: addActivityEditionParticipant
+      x-swagger-router-controller: Mobile
       description: |
         Creates an activity participation on the given activity edition
       consumes:
@@ -694,7 +705,8 @@ paths:
       - admins
       - mobile
       summary: Get an activity participation
-      operationId: getActivityEditionParticipation
+      operationId: getActivityEditionParticipationById
+      x-swagger-router-controller: Mobile
       description: |
         Retrives the activity participation identified by the URI      
       produces:
@@ -723,6 +735,7 @@ paths:
       - mobile
       summary: Update an activity participation
       operationId: updateActivityEditionParticipation
+      x-swagger-router-controller: Mobile
       description: |
         Updates the activity participation identified by the URI         
       consumes:
@@ -756,7 +769,8 @@ paths:
       - mobile
       - admins
       summary: Get an appointment request
-      operationId: getAppointment
+      operationId: getAppointmentById
+      x-swagger-router-controller: Mobile
       description: |
         Gets the appointment request identified by the URI
       consumes:
@@ -785,6 +799,7 @@ paths:
       - admins
       summary: Update an appointment request
       operationId: updateAppointment
+      x-swagger-router-controller: Mobile
       description: |
         Updates the appointment request identified by the URI
       consumes:
