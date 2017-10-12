@@ -5,19 +5,31 @@ var db = require('./db');
 
 
 module.exports.getCalendarEvents = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * dateFrom (Date)
   * dateTo (Date)
   * calendarType (List)
   * limit (Integer)
   * skip (Integer)
   **/  
+  
+  var examples = {};
+  examples['application/json'] = db.CALENDAR_ENTRIES; 
+  
+  res.setHeader('Content-Type', 'application/json');
+  
+  if (Object.keys(examples).length > 0) {      
+    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
+  } else {
+    res.end();
+  }    
+  
 };
 
 module.exports.getPNEvent = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * eventId (UUID)
   **/  
   
@@ -45,10 +57,11 @@ module.exports.getPNEvent = function (args, res, next) {
 };
 
 module.exports.getHSEvent = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * eventId (UUID)
   **/  
+  
   var eventId = args.eventId.value;
   var event = db.HSTATUS.find(function(item){
     return item.id == eventId;
@@ -101,8 +114,8 @@ module.exports.getActivityById = function (args, res, next) {
 };
 
 module.exports.updateActivity = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * activityId (UUID)
   * body (Activity)
   **/    
@@ -127,58 +140,169 @@ module.exports.updateActivity = function (args, res, next) {
 };
 
 module.exports.createActivity = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * body (Activity)
   **/    
   
-  var event = args.body.value;   
-  var eventId = "bb90f1ee-6c54-4b01-90e6-d701748f085" + EVENTS.length ;  
+  var activity = args.body.value;   
+  var activityId = "3000f1ee-6c54-4b01-90e6-d701748f085" + db.ACTIVITIES.length ;  
+  
 
-  event.id = eventId;
-  event.createdOn = (new Date()).toISOString();
-  event.resident = USERS.find(function(user){
-    return user.id == event.resident.id;
-  });
-  event.updates = [];  
+  activity.id = activityId;
+  activity.createdOn = (new Date()).toISOString();
+  activity.organisedBy = db.USERS[1];  
+  activity.editions = [];
+  
+  if (activity.canRequestAppointments){
+    activity.appointmentRequests = [];
+  }
 
-  if (event.resident) {
-    EVENTS.push(event);
-    res.location('/sync/event/' + eventId);
+  if (activity) {
+    db.ACTIVITIES.push(activity);
+    res.location('/activity/' + activityId);
     res.end();  
   } else {
     res.status(422);
-    res.end({status: 422, error: "Invalid resident information"});
+    res.end({status: 422, error: "Invalid information"});
   }  
 };
 
 module.exports.getActivityEditions = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * activityId (UUID)
   **/
-};
-
-module.exports.createActivityEdition = function (args, res, next) {
+  
+  var activityId = args.activityId.value;
+  var activity = db.ACTIVITIES.find(function(item){
+    return item.id == activityId;
+  });  
+  
+  var examples = {};
+  examples['application/json'] = activity.editions; 
+  
+  res.setHeader('Content-Type', 'application/json');
+  
+  if (activity){  
+    if (Object.keys(examples).length > 0) {      
+      res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
+    } else {
+      res.end();
+    }  
+  } else {
+    res.status(404);
+    res.end({status: 404, error: "Activity not found"});    
+  }    
   
 };
 
+module.exports.createActivityEdition = function (args, res, next) {
+/**
+  * parameters expected in the args:
+  * activityId (UUID)
+  * body (ActivityEdition)
+  **/  
+  var edition = args.body.value;   
+  var activityId = args.activityId.value;
+  
+  var editionId = "1000f1ee-6c54-4b01-90e6-d701748f085" + db.ACTIVITY_EDITIONS.length ;    
+
+  var activity = db.ACTIVITIES.find(function(item){
+    return item.id == activityId;
+  });     
+  
+  edition.id = editionId;
+  edition.comments = [];
+  edition.multimedia = [];
+  
+  if (edition.canRequestAppointments){
+    edition.appointments = [];
+  } else {
+    edition.participants = [];
+  }  
+
+  if (activity) {
+    activity.editions.push(edition);  
+    db.ACTIVITY_EDITIONS.push(edition);
+    res.location('/activity_edition/' + editionId);
+    res.end();  
+  } else {
+    res.status(422);
+    res.setHeader('Content-Type', 'application/json');
+    res.end({status: 422, error: "Invalid activity information"});
+  }  
+};
+
 module.exports.createAppointment = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * activityId (UUID)
   * body (Consultation)
   **/
   // no response value expected for this operation  
-};
+  var appointment = args.body.value;   
+  var activityId = args.activityId.value;
+  
+  var appointmentId = "7790f1ee-6c54-4b01-90e6-d701748f085" + CONSULTATIONS.length ;    
 
-module.exports.getActivityAppointments = function (args, res, next) {
+  var activity = db.ACTIVITIES.find(function(item){
+    return item.id == activityId;
+  });  
+  
+  appointment.id = appointmentId;
+  appointment.requestedOn = (new Date()).toISOString();
+  appointment.staffComment = [];
+  appointment.requestedBy = db.USERS[0];
+    
+  
+  if (activity) {
+    activity.appointmentRequests.push(appointment);  
+    db.CONSULTATIONS.push(appointment);
+    res.location('/appointment/' + appointmentId);
+    res.end();  
+  } else {
+    res.status(422);
+    res.setHeader('Content-Type', 'application/json');
+    res.end({status: 422, error: "Invalid activity information"});
+  }    
   
 };
 
+module.exports.getActivityAppointments = function (args, res, next) {
+/**
+  * parameters expected in the args:
+  * activityId (UUID)
+  **/
+  
+  var activityId = args.activityId.value;
+  var activity = db.ACTIVITIES.find(function(item){
+    return item.id == activityId;
+  });  
+  
+  var examples = {};
+  examples['application/json'] = activity.appointmentRequests; 
+  
+  res.setHeader('Content-Type', 'application/json');
+  
+  if (activity && activity.canRequestAppointments){  
+    if (Object.keys(examples).length > 0) {      
+      res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
+    } else {
+      res.end();
+    }  
+  } else if (activity){
+    res.status(422);
+    res.end({status: 404, error: "Activity does not support appointments"});        
+  } else {
+    res.status(404);
+    res.end({status: 404, error: "Activity not found"});    
+  }      
+};
+
 module.exports.getActivityEditionById = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * editionId (UUID)
   **/  
   var editionId = args.editionId.value;
@@ -205,8 +329,8 @@ module.exports.getActivityEditionById = function (args, res, next) {
 };
 
 module.exports.updateActivityEdition = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * editionId (UUID)
   * body (ActivityEdition)
   **/    
@@ -231,20 +355,70 @@ module.exports.updateActivityEdition = function (args, res, next) {
 };
 
 module.exports.getActivityEditionParticipations = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * editionId (UUID)
   **/  
+  
+  var editionId = args.editionId.value;
+  var edition = db.ACTIVITY_EDITIONS.find(function(item){
+    return item.id == editionId;
+  });  
+  
+  var examples = {};
+  examples['application/json'] = edition.participants; 
+  
+  res.setHeader('Content-Type', 'application/json');
+  
+  if (activity && ! activity.canRequestAppointments){  
+    if (Object.keys(examples).length > 0) {      
+      res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
+    } else {
+      res.end();
+    }  
+  } else if (activity){
+    res.status(422);
+    res.end({status: 404, error: "Activity does not support participations"});        
+  } else {
+    res.status(404);
+    res.end({status: 404, error: "Activity not found"});    
+  }     
 };
 
 module.exports.addActivityEditionParticipant = function (args, res, next) {
-  /**
-   * parameters expected in the args:
+/**
+  * parameters expected in the args:
   * editionId (UUID)
   * body (ActivityParticipation)
   **/
-  // no response value expected for this operation  
-  res.end(); 
+  // no response value expected for this operation    
+
+  var participation = args.body.value;   
+  var editionId = args.editionId.value;
+  
+  var participationId = "8890f1ee-6c54-4b01-90e6-d701748f085" + ACTIVITY_PARTICIPATIONS.length ;    
+
+  var edition = db.ACTIVITY_EDITIONS.find(function(item){
+    return item.id == editionId;
+  });  
+  
+  participation.id = participationId;
+  participation.createdOn = (new Date()).toISOString();
+  participation.participant = db.USERS.find(function(item){
+    return item.id == participation.participant.id;
+  });
+        
+  
+  if (edition && participation.participant) {
+    edition.participations.push(participation);  
+    db.ACTIVITY_PARTICIPATIONS.push(participation);
+    res.location('/activity_participation/' + participationId);
+    res.end();  
+  } else {
+    res.status(422);
+    res.setHeader('Content-Type', 'application/json');
+    res.end({status: 422, error: "Invalid edition or participant information"});
+  }     
   
 };
 

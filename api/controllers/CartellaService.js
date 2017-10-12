@@ -28,7 +28,7 @@ exports.postEvent = function (args, res, next) {
   // no response value expected for this operation
     
   var event = args.body.value;   
-  var eventId = "bb90f1ee-6c54-4b01-90e6-d701748f085" + EVENTS.length ;  
+  var eventId = "bb90f1ee-6c54-4b01-90e6-d701748f085" + db.EVENTS.length ;  
 
   event.id = eventId;
   event.createdOn = (new Date()).toISOString();
@@ -106,7 +106,7 @@ exports.postEventUpdate = function (args, res, next) {
   var update = args.body.value;   
   var eventId = args.eventId.value;
   
-  var updateId = "cc90f1ee-6c54-4b01-90e6-d701748f0850" + EVENT_UPDATES.length ;    
+  var updateId = "cc90f1ee-6c54-4b01-90e6-d701748f0850" + db.EVENT_UPDATES.length ;    
 
   update.id = updateId;
   update.createdOn = (new Date()).toISOString();

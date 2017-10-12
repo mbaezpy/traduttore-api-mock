@@ -348,7 +348,39 @@ var ACTIVITIES = [
 ];
 
 
-var CALENDAR_ENTRIES = [];
+var CALENDAR_ENTRIES = [
+  {
+    "pneeds": [
+      {
+        "name": "Lunch",
+        "category": "Meals",
+        "startDate": "2017-10-09T13:02:05Z",
+        "endDate": "2017-10-09T13:02:05Z",
+        "type": PNEEDS[0].type,
+        "event": PNEEDS[0]
+      }
+    ],
+    "hstatus": [
+      {
+        "name": "Blood pressure Measurement",
+        "category": "Bio-messures",
+        "startDate": "2017-10-09T13:02:05Z",
+        "endDate": "2017-10-09T13:02:05Z",
+        "type": HSTATUS[0].type,
+        "event": HSTATUS[0]
+      }
+    ],
+    "activities": [
+      {
+        "name": "Recita del Rosario",
+        "category": "Religious",
+        "startDate": "2017-10-09T13:02:05Z",
+        "endDate": "2017-10-09T13:02:05Z",
+        "activity": ACTIVITIES[0]
+      }
+    ]
+  }
+];
 
 
 exports.EVENTS = EVENTS;

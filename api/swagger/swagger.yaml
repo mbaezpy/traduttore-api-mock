@@ -397,7 +397,7 @@ paths:
           $ref: '#/responses/AccessForbidden'   
         404:
           $ref: '#/responses/NotFound'          
-  /activity:
+  /activities:
     post:
       tags:
       - admins
