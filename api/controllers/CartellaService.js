@@ -1,6 +1,11 @@
 'use strict';
 
-var db = require('./db');
+var db = null;
+
+
+exports.setDB = function(paramDB){
+  db = paramDB;  
+}
 
 exports.getShareable = function (args, res, next) {
   /**

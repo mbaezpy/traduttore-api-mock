@@ -1,8 +1,10 @@
 'use strict';
 
-var db = require('./db');
+var db = null;
 
-
+module.exports.setDB = function(paramDB){
+  db = paramDB;  
+}
 
 module.exports.getCalendarEvents = function (args, res, next) {
 /**

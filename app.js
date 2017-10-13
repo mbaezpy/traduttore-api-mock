@@ -2,6 +2,11 @@
 
 var SwaggerExpress = require('swagger-express-mw');
 var app = require('express')();
+
+var db = require('./api/controllers/db');
+
+app.set('db', db);
+
 module.exports = app; // for testing
 
 var config = {
