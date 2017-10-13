@@ -1773,6 +1773,10 @@ definitions:
       name:
         type: string  
         description: Name of the user
+      picture: 
+        type: string
+        format: url
+        description: Profile picture
       role:
         type: string  
         description: Role of the user

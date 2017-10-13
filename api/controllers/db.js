@@ -5,6 +5,7 @@ var USERS = [
     "id": "aa90f1ee-6c54-4b01-90e6-d701748f0850",
     "name": "Carla Sartori",
     "role": "family",
+    "picture" : "https://skincancer.blob.core.windows.net/assets/uploads/img/Guide.to.Healthy.Skin/young.adult.jpg",
     "contactInfos": [{
         "type": "email",
         "value": "carla@gmail.com"
