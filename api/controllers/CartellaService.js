@@ -96,6 +96,43 @@ exports.getEventById = function (args, res, next) {
   
 };
 
+
+var pushToCollegamenti = function(update){
+  
+  if (update.status != "shared") return;
+  
+  var eventId = "4490f1ee-6c54-4b01-90e6-d701748f085" + db.PNEEDS.length;
+  
+  var comment = {
+    "id": "2290f1ee-6c54-4b01-90e6-d701748f085" + db.COMMENTS.length,
+    "createdBy": update.createdBy,
+    "createdOn": update.createdOn,
+    "comment": update.staffComment
+  };
+  
+  var eventDetail = {
+    "id": "3390f1ee-6c54-4b01-90e6-d701748f085" + db.EVENT_DETAILS.length,
+    "createdBy": update.createdBy,
+    "name": update.updateData[0].name,
+    "description": "Portion of the meal eaten",
+    "valueText": "",
+    "valueNum": update.updateData[0].value
+  };
+  
+  var pneeds = {
+    "id": eventId,
+    "createdOn": "2017-10-09T13:02:06Z",
+    "type": db.EVENT_TYPES[0],
+    "staffComment": comment,
+    "indicator": eventDetail,
+    "details": [eventDetail]
+  };  
+  
+  db.PNEEDS.push(pneeds);
+  
+};
+
+
 exports.postEventUpdate = function (args, res, next) {
   /**
    * parameters expected in the args:
@@ -123,6 +160,7 @@ exports.postEventUpdate = function (args, res, next) {
     event.updates.push(update);  
     db.EVENT_UPDATES.push(event);
     res.location('/sync/event_update/' + updateId);
+    pushToCollegamenti(update);
     res.end();  
   } else {
     res.status(422);
