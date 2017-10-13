@@ -64,6 +64,34 @@ var EVENTS = [{
   "updates": [EVENT_UPDATES[0]]
 }];
 
+var SHARING_SETTINGS = [
+{
+    "id": "b290f1ee-6c54-4b01-90e6-d701748f0850",
+    "name": "Default meals completion configuration",
+    "description": "Configuration of the meals consumption event",
+    "startDate": "2017-10-09T08:35:40Z",
+    "endDate": "2017-10-09T08:35:40Z",
+    "isActive": true,
+    "isShareable": true,
+    "reqConfirmation": true,
+    "reqStaffComment": true,
+    "shareOnInsert": true,
+    "optSnooze": true,
+    "optCancel": true,
+    "shareInApp": true,
+    "shareInCall": false,
+    "shareInSM": false,
+    "extraParams": [{
+        "id": "c290f1ee-6c54-4b01-90e6-d701748f0851",
+        "name": "meal-completness",
+        "title": "Meal completness",
+        "type": "numeric"
+    }]
+  }  
+  
+];
+
+
 var SYNC_INFOS = [{
 
     "isShareable": true,
@@ -71,29 +99,7 @@ var SYNC_INFOS = [{
       "id": "a290f1ee-6c54-4b01-90e6-d701748f0851",
       "name": "Meals completion configuration",
       "description": "Configuration of the meals consumption event",
-      "currentSetting": {
-        "id": "b290f1ee-6c54-4b01-90e6-d701748f0851",
-        "name": "Default meals completion configuration",
-        "description": "Configuration of the meals consumption event",
-        "startDate": "2017-10-09T08:35:40Z",
-        "endDate": "2017-10-09T08:35:40Z",
-        "isActive": true,
-        "isShareable": true,
-        "reqConfirmation": true,
-        "reqStaffComment": true,
-        "shareOnInsert": true,
-        "optSnooze": true,
-        "optCancel": true,
-        "shareInApp": true,
-        "shareInCall": false,
-        "shareInSM": false,
-        "extraParams": [{
-            "id": "c290f1ee-6c54-4b01-90e6-d701748f0851",
-            "name": "meal-completness",
-            "title": "Meal completness",
-            "type": "numeric"
-        }]
-      }
+      "currentSetting": SHARING_SETTINGS[0]
     },
     "sendTo": [
       {
@@ -387,6 +393,7 @@ exports.EVENTS = EVENTS;
 exports.EVENT_UPDATES = EVENT_UPDATES;
 exports.USERS = USERS;
 exports.SYNC_INFOS = SYNC_INFOS;
+exports.SHARING_SETTINGS = SHARING_SETTINGS;
 
 exports.CALENDAR_ENTRIES = CALENDAR_ENTRIES;
 exports.PNEEDS = PNEEDS;

@@ -214,3 +214,63 @@ exports.putEventUpdateById = function (args, res, next) {
   
 };
 
+exports.getSharingSettingById = function (args, res, next) {
+  var settingId = args.settingId.value;
+  var setting = db.SHARING_SETTINGS.find(function(item){
+    return item.id == settingId;
+  });  
+  
+  var examples = {};
+  examples['application/json'] = setting; 
+  
+  if (setting){  
+    if (Object.keys(examples).length > 0) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
+    } else {
+      res.end();
+    }  
+  } else {
+    res.status(404);
+    res.setHeader('Content-Type', 'application/json');
+    res.end({status: 404, error: "Sharing setting not found"});    
+  }
+  
+};
+
+var setifDef = function (o, n, k){
+   return n[k] != undefined ? n[k] : o[k];  
+};
+
+exports.updateSharingSetting = function (args, res, next) {
+  var settingId = args.settingId.value;
+  var body = args.body.value; 
+  
+  var setting = db.SHARING_SETTINGS.find(function(item){
+    return item.id == settingId;
+  });  
+  
+  //TODO: Implement update function
+  
+  if (!setting){
+    res.status(404);
+    res.setHeader('Content-Type', 'application/json');
+    res.end({status: 404, error: "Event update not found"});            
+  } else {  
+            
+    setting.isShareable = setifDef(setting, body, "isShareable");
+    setting.reqConfirmation = setifDef(setting, body, "reqConfirmation");
+    setting.reqStaffComment = setifDef(setting, body, "reqStaffComment");
+    setting.shareOnInsert = setifDef(setting, body, "shareOnInsert");
+    setting.optSnooze = setifDef(setting, body, "optSnooze");
+    setting.optCancel = setifDef(setting, body, "optCancel");
+    setting.shareInApp = setifDef(setting, body, "shareInApp");
+    setting.shareInCall = setifDef(setting, body, "shareInCall");    
+    
+    res.end();  
+  }
+  
+};
+
+
+

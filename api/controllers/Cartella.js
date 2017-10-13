@@ -33,3 +33,14 @@ module.exports.putEventUpdateById = function (req, res, next) {
   Cartella.putEventUpdateById(req.swagger.params, res, next);
 };
 
+module.exports.getSharingSettingById = function (req, res, next) {
+  Cartella.setDB(req.app.locals.db);
+  Cartella.getSharingSettingById(req.swagger.params, res, next);
+};
+
+module.exports.updateSharingSetting = function (req, res, next) {
+  Cartella.setDB(req.app.locals.db);
+  Cartella.updateSharingSetting(req.swagger.params, res, next);
+};
+
+

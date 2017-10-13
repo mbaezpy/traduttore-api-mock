@@ -158,7 +158,7 @@ paths:
     post:
       tags:
       - cartella          
-      summary: Pushe event updates from the Cartella to the Collegamenti platform
+      summary: Push event updates from the Cartella to the Collegamenti platform
       description: |
         This function allows NH staff to push follow up on events to the Collegamenti platform, so it can be distributed to the family members.
       operationId: postEventUpdate
@@ -225,7 +225,69 @@ paths:
         401:
           $ref: '#/responses/AccessForbidden'   
         404:
-          $ref: '#/responses/NotFound'            
+          $ref: '#/responses/NotFound'     
+          
+  /sync/sharing_setting/{settingId}:
+    get:
+      tags:
+      - admins          
+      summary: Retrieve an event sharing config
+      description: |
+        This function retrieves an event sharing setting.
+      operationId: getSharingSettingById
+      x-swagger-router-controller: Cartella         
+      produces:
+      - application/json
+      parameters:
+      - name: settingId
+        in: path
+        description: ID of the event sharing type setting 
+        required: true
+        type: string
+        format: uuid
+      responses:
+        204:
+          description: Successful operation   
+          schema:
+            $ref: '#/definitions/EventSharingConfigSettings'  
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'  
+    put:
+      tags:
+      - admins          
+      summary: Update sharing settings
+      description: |
+        This function updates the sharing configuration
+      operationId: updateSharingSetting
+      x-swagger-router-controller: Cartella           
+      consumes:
+      - application/json
+      parameters:
+      - name: settingId
+        in: path
+        description: ID of the event update
+        required: true
+        type: string
+        format: uuid      
+      - in: body
+        name: body
+        description: Update to be pushed
+        required: true
+        schema:
+          $ref: '#/definitions/EventSharingConfigSettings'      
+      responses:
+        204:
+          description: Successful operation  
+        400:
+          $ref: '#/responses/BadRequest'           
+        401:
+          $ref: '#/responses/AccessForbidden'   
+        404:
+          $ref: '#/responses/NotFound'             
   
   /calendar:
     get:
