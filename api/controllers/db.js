@@ -106,7 +106,7 @@ var SYNC_INFOS = [{
       {
         "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
         "contact": USERS[0],
-        "relationship": "dougther",
+        "relationship": "daugther",
         "preference": {
           "shareWithMe": true,
           "shareInApp": true,
