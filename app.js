@@ -5,7 +5,7 @@ var app = require('express')();
 
 var db = require('./api/controllers/db');
 
-app.set('db', db);
+app.locals.db = db;
 
 module.exports = app; // for testing
 

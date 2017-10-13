@@ -121,8 +121,9 @@ var pushToCollegamenti = function(update){
     "name": update.updateData[0].name,
     "description": "Portion of the meal eaten",
     "valueText": "",
-    "valueNum": update.updateData[0].value
+    "valueNum": parseInt(update.updateData[0].value)
   };
+  
   
   var pneeds = {
     "id": eventId,
@@ -132,6 +133,17 @@ var pushToCollegamenti = function(update){
     "indicator": eventDetail,
     "details": [eventDetail]
   };  
+  
+  var calendarEntry = {
+      "name": pneeds.type.name,
+      "category": pneeds.type.category,
+      "startDate": pneeds.createdOn,
+      "endDate": pneeds.createdOn,
+      "type": pneeds.type,
+      "event": pneeds
+    };
+
+  db.CALENDAR_ENTRIES[0].pneeds.push(calendarEntry);
   
   db.PNEEDS.push(pneeds);
   
@@ -164,8 +176,9 @@ exports.postEventUpdate = function (args, res, next) {
   if (event) {
     event.updates.push(update);  
     db.EVENT_UPDATES.push(event);
-    res.location('/sync/event_update/' + updateId);
     pushToCollegamenti(update);
+    
+    res.location('/sync/event_update/' + updateId);    
     res.end();  
   } else {
     res.status(422);

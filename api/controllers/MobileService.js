@@ -17,7 +17,7 @@ module.exports.getCalendarEvents = function (args, res, next) {
   **/  
   
   var examples = {};
-  examples['application/json'] = db.CALENDAR_ENTRIES; 
+  examples['application/json'] = db.CALENDAR_ENTRIES;   
   
   res.setHeader('Content-Type', 'application/json');
   
